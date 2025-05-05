@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <!-- Add SweetAlert CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         :where([class^="ri-"])::before { content: "\f3c2"; }
         body {
@@ -43,6 +45,50 @@
         input:focus, textarea:focus {
             border-color: #3b82f6;
         }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .modal-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        .modal-tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 2px solid #e5e7eb;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        .modal-tab.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+        }
+        .modal-form {
+            display: none;
+        }
+        .modal-form.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -51,14 +97,24 @@
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-['Pacifico'] text-primary header-animation">Just A Sample</a>
             <nav class="hidden md:block">
-                <ul class="flex space-x-8">
+                <ul class="flex space-x-8 items-center">
                     <li><a href="#about" class="text-gray-700 hover:text-primary transition-colors">About</a></li>
                     <li><a href="#portfolio" class="text-gray-700 hover:text-primary transition-colors">Portfolio</a></li>
                     <li><a href="#contact" class="text-gray-700 hover:text-primary transition-colors">Contact</a></li>
+                    <li>
+                        <button id="auth-button" class="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary/90 transition-colors whitespace-nowrap">
+                            Login / Sign Up
+                        </button>
+                    </li>
                 </ul>
             </nav>
-            <div class="md:hidden w-8 h-8 flex items-center justify-center cursor-pointer" id="mobile-menu-button">
-                <i class="ri-menu-line ri-lg text-gray-700"></i>
+            <div class="md:hidden flex items-center gap-4">
+                <button id="auth-button-mobile" class="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary/90 transition-colors whitespace-nowrap text-sm">
+                    Login
+                </button>
+                <div class="w-8 h-8 flex items-center justify-center cursor-pointer" id="mobile-menu-button">
+                    <i class="ri-menu-line ri-lg text-gray-700"></i>
+                </div>
             </div>
         </div>
         <div id="mobile-menu" class="hidden md:hidden bg-white w-full border-t border-gray-100">
@@ -70,6 +126,55 @@
         </div>
     </header>
 
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-tabs">
+                <div class="modal-tab active" data-tab="login">Login</div>
+                <div class="modal-tab" data-tab="signup">Sign Up</div>
+            </div>
+            
+            <form id="login-form" class="modal-form active">
+                <div class="mb-4">
+                    <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="login-email" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/20 text-gray-800" placeholder="your@email.com" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/20 text-gray-800" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white py-2 rounded-button font-medium hover:bg-primary/90 transition-colors">Login</button>
+                <div class="mt-4 text-center text-sm text-gray-600">
+                    Don't have an account? <span class="text-primary cursor-pointer" id="switch-to-signup">Sign up</span>
+                </div>
+            </form>
+            
+            <form id="signup-form" class="modal-form">
+                <div class="mb-4">
+                    <label for="signup-name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="signup-name" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/20 text-gray-800" placeholder="John Doe" required>
+                </div>
+                <div class="mb-4">
+                    <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="signup-email" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/20 text-gray-800" placeholder="your@email.com" required>
+                </div>
+                <div class="mb-4">
+                    <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="signup-password" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/20 text-gray-800" placeholder="••••••••" required>
+                </div>
+                <div class="mb-6">
+                    <label for="signup-confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/20 text-gray-800" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white py-2 rounded-button font-medium hover:bg-primary/90 transition-colors">Sign Up</button>
+                <div class="mt-4 text-center text-sm text-gray-600">
+                    Already have an account? <span class="text-primary cursor-pointer" id="switch-to-login">Login</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rest of your existing HTML content (Hero, About, Portfolio, Contact, Footer sections) -->
     <!-- Hero Section -->
     <section class="pt-32 pb-20" style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)), url('https://readdy.ai/api/search-image?query=minimal%20abstract%20design%20with%20soft%20gradient%20colors%2C%20light%20blue%20and%20light%20purple%2C%20professional%20portfolio%20background%2C%20elegant%20and%20clean%2C%20modern%20design%20aesthetic%2C%20subtle%20geometric%20patterns&width=1600&height=800&seq=1&orientation=landscape'); background-size: cover; background-position: center;">
         <div class="container mx-auto px-6">
@@ -433,6 +538,8 @@
         </div>
     </footer>
 
+       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile menu toggle
@@ -447,8 +554,8 @@
                     mobileMenuButton.innerHTML = '<i class="ri-close-line ri-lg text-gray-700"></i>';
                 }
             });
-            
-            // Smooth scrolling for anchor links
+
+             // Smooth scrolling for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function(e) {
                     e.preventDefault();
